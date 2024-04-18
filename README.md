@@ -18,7 +18,7 @@ myself to learn more Forth. I'm sure that it's not very "Forthy" yet, but it
 was an enjoyable challenge.
 
 It's written for [Tali Forth 2](https://github.com/SamCoVT/TaliForth2) for the
-65c02 processor and I have successfully run it on my [Planck 65C02
+65C02 processor and I have successfully run it on my [Planck 65C02
 system](https://planck6502.com/ "An open-hardware, extensible 65c02-based
 computer"), as well as in the [py65](https://github.com/mnaberez/py65)
 simulator on my Mac.  It also runs in [gforth](https://gforth.org/) on my Mac.
