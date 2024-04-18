@@ -1,7 +1,9 @@
 ## Hangman for Tali Forth 2
 
 Date: 4/18/24
+
 License: Public Domain CC0
+
 Author: Ben Chapman benchapman@fastmail.com
 
 This is a **basic** Hangman game created by a novice Forth programmer (me).
