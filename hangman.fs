@@ -1,12 +1,13 @@
 \ Hangman game for Tali Forth 2
-\ benchapman@fastmail.com 20240416
+\ benchapman@fastmail.com 
 \ Releassed into the Public Domain CC0
 \ Example of beginner Forth coding
+\ v 0.2 20240423
 
 \ Graphics and wordlist from Github 
 \ https://gist.github.com/chrishorton/ hangmanwordbank.py
 
-marker **hangman**
+marker -hangman
 
 3 constant x
 3 constant y
@@ -42,7 +43,7 @@ x y 9 +  at-xy ."      ==========";
         8 of h8 endof
     endcase ;
 
-: wait 32000 0 do loop ;
+: wait 16000 0 do loop ;
 
 : animate ( --)
    page
@@ -55,12 +56,40 @@ variable man
 : man1 1 man ! ;
 : man@ man @ ;
 
-\ An array of 10-character wide fields
-\ No animals longer than 10 chars!
-: "animals" s" ant       baboon    badger    bat       bear      beaver    camel     cat       clam      cobra     cougar    coyote    crow      deer      dog       donkey    duck      eagle     ferret    fox       frog      goat      goose     hawk      lion      lizard    llama     mole      monkey    moose     mouse     mule      newt      otter     owl       panda     parrot    pigeon    python    ram       rat       raven     rhino     salmon    seal      shark     sheep     skunk     sloth     snake     spider    stork     swan      tiger     toad      trout     turkey    turtle    weasel    whale     wolf      wombat    zebra     " ;
+\ Pipe-delimited array of animals
+\ animal names cannot be longer than 10 chars. Final pipe char is required
+: "animals" s" 
+ant|baboon|badger|bat|bear|beaver|camel|cat|clam|cobra|cougar|coyote|crow|deer|dog|donkey|duck|eagle|ferret|fox|frog|goat|goose|hawk|lion|lizard|llama|mole|monkey|moose|mouse|mule|newt|otter|owl|panda|parrot|pigeon|python|ram|rat|raven|rhino|salmon|seal|shark|sheep|skunk|sloth|snake|spider|stork|swan|tiger|toad|trout|turkey|turtle|weasel|whale|wolf|wombat|zebra|" 
+;
 
-\ Get number of animals: length / 10
-: how_many ( addr u -- addr u u1) dup 10 / ;
+0 value chunk
+0 value start
+0 value end 
+'|' constant delim
+
+\ count chunks of text 
+: how_many ( addr u -- u) 
+    0 -rot bounds do i c@ delim = if 1+ then loop ;
+
+\ find addr and len for specific chunk in source string
+\ source string and chunk number to find on stack; chunk is 0-indexed 
+: ?animal ( addr u u -- addr u)
+    -rot bounds dup to start
+    0 to chunk
+    do i c@ delim = 
+        if 
+        i to end
+        dup chunk =
+            if
+                start end start -
+                leave \ exit on match
+            then
+            end 1+ to start
+            chunk 1+ to chunk
+        then
+    loop 
+    rot drop
+    ;
 
 \ buffer for chosen animal
 create animal 10 chars allot 
@@ -73,23 +102,31 @@ create answer 10 chars allot
 : answer0 ( --) answer 10 bl fill ;
 : answer@ ( -- addr u) answer 10 -trailing ;
 
+
+0 value len
 \ show all the animals
 : review_animals ( --)
-  cr
+  0 to len
+  0 to chunk
+  cr cr 5 x + spaces
   "animals" bounds do
-  cr 15 spaces i 30 type 
-  30 +loop 
-  cr cr
-  15 spaces ." Hit a key to continue"
+  i c@ dup delim =
+  if
+    10 len - spaces drop
+    0 to len
+    chunk 1+ to chunk
+    chunk 3 mod 0= if cr 5 x + spaces then
+  else 
+    emit 
+    len 1+ to len
+  then
+  loop  
+  cr 7 x + spaces ." Hit a key to continue"
   key drop
   ;
 
-\ pick a particular animal by index from the super string
-\ store it in the animal variable
-: set_animal ( addr u u --)
-    swap drop 
-    10 * + 10 
-    animal swap move ;
+\ store string in the animal variable
+: set_animal ( addr u --) animal swap move ;
 
 \ Pseudorandom number routine Starting Forth, p. 265
 variable rnd here rnd !
@@ -162,7 +199,7 @@ variable right
 
 : init 
     man1 answer0 animal0 played0 played_ptr0 
-    "animals" how_many choose set_animal 
+    "animals" 2dup how_many choose ?animal set_animal 
     page 1 draw_man 
     draw_answer
     ;
@@ -171,9 +208,11 @@ variable right
 
 : lose ( -- f) man@ 8 = ;
 
+0 value games
+
 : play_game
     page
-    animate
+    games 0= if animate else 1 draw_man then
     x 5 + y 13 + at-xy ." Welcome to Hangman!"
     x 5 + y 14 + at-xy ." Guess the animal before you run out of chances."
     x 5 + y 15 + at-xy ." Do you want to see the list of possible animals (y/n)? "
@@ -203,8 +242,12 @@ variable right
 : play
     begin
         play_game
+        games 1+ to games
         again? 0= 
     until
+        x 5 + y 14 + at-xy ." You played " games . ." games during this session."
         x 5 + y 15 + at-xy ." Goodbye! Type 'play' to play again."
+        x 5 + y 16 + at-xy ."          or '-hangman' to remove from memory." cr cr
+
     ;
 
