@@ -31,7 +31,7 @@ animation zooms by on the gforth system, but crawls on the py65 one. Adjust as
 you see fit (or comment out the `animate` word inside of `play_game`).
 
 If you guess 'o' and there are multiple 'o' letters, each one will be filled in.
-In other words, don't guess 'o' again. If you repeat a guess of a letter that's
+In other words, don't guess 'o' again. However, if you repeat a guess of a letter that's
 in the answer, the guess won't count against you. A repeated incorrect guess
 will count against you.
 
